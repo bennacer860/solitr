@@ -5,23 +5,30 @@ $card_width: 120px;
 $card_height: 200px;
 $column_offset: $card_width + 20px;
 
+body {
+  height: 100%;
+}
+
 .solitaire_canvas {
-  position: relative;
-}
-
-.card > div, .base {
-  width: $card_width;
-  height: $card_height;
-}
-
-.base {
   position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
-.card > div, .base_image {
+.card, .card > div, .base, .base_image, .dropzone {
   width: $card_width;
   height: $card_height;
   position: absolute;
+}
+
+.base, .dropzone {
+  position: absolute;
+}
+
+.dropzone {
+  z-index: -1;
+//    background-color: #f00;
+//    opacity: 0.2;
 }
 
 .base.foundation, .base.tableau {
@@ -33,72 +40,6 @@ $column_offset: $card_width + 20px;
 
 #redeal_image, #exhausted_image {
   background-color: #eee;
-}
-
-// Positions
-
-#stock_base {
-  left: $first_column;
-}
-
-#waste_base {
-  left: $first_column + 1 * $column_offset;
-}
-
-#stock_base,
-#waste_base,
-.foundation {
-  top: $first_row;
-}
-
-#foundation_0_base {
-  left: $first_row + 3 * $column_offset;
-}
-
-#foundation_1_base {
-  left: $first_row + 4 * $column_offset;
-}
-
-#foundation_2_base {
-  left: $first_row + 5 * $column_offset;
-}
-
-#foundation_3_base {
-  left: $first_row + 6 * $column_offset;
-}
-
-.tableau {
-  top: $second_row;
-}
-
-@for $i from 0 through 6 {
-  #tableau_#{$i}_base {
-    left: $first_row + $i * $column_offset;
-  }
-}
-
-.stacked, .fanned_right, .fanned_down {
-  position: absolute;
-}
-
-.stacked {
-  left: 2px;
-  top: 2px;
-}
-
-.fanned_right {
-  left: 20px;
-  top: 0px;
-}
-
-.fanned_down {
-  left: 0px;
-  top: 20px;
-}
-
-.base > .stacked, .base > .fanned_right, .base > .fanned_down {
-  top: 0;
-  left: 0;
 }
 
 // Cards
