@@ -1,6 +1,10 @@
 div.solitaire_canvas
   div.base#stock_base
-    div.base_image
+    div.base_image#redeal_image
+      | CLICK TO REDEAL
+    div.base_image#exhausted_image
+      | EXHAUSTED
+
   div.base#waste_base
     div.base_image
   - 0.upto 3 do |i|

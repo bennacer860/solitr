@@ -18,13 +18,21 @@ $column_offset: $card_width + 20px;
   position: absolute;
 }
 
+.card > div, .base_image {
+  width: $card_width;
+  height: $card_height;
+  position: absolute;
+}
+
 .base.foundation, .base.tableau {
   .base_image {
-    width: $card_width;
-    height: $card_height;
     background-color: #000;
     opacity: 0.1;
   }
+}
+
+#redeal_image, #exhausted_image {
+  background-color: #eee;
 }
 
 // Positions
@@ -69,19 +77,26 @@ $column_offset: $card_width + 20px;
   }
 }
 
+.stacked, .fanned_right, .fanned_down {
+  position: absolute;
+}
+
 .stacked {
-  position: absolute;
-  top: 2px;
   left: 2px;
+  top: 2px;
 }
 
-.fanned {
-  position: absolute;
-  top: 20px;
+.fanned_right {
+  left: 20px;
+  top: 0px;
+}
+
+.fanned_down {
   left: 0px;
+  top: 20px;
 }
 
-.base > .stacked, .base > .fanned {
+.base > .stacked, .base > .fanned_right, .base > .fanned_down {
   top: 0;
   left: 0;
 }
@@ -89,11 +104,6 @@ $column_offset: $card_width + 20px;
 // Cards
 
 .card {
-  & > div {
-    width: $card_width;
-    height: $card_height;
-    position: absolute;
-  }
   .face {
     background-color: #eee;
     border-radius: 5px;
