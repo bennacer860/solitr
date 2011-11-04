@@ -1,0 +1,14 @@
+div.solitaire_canvas
+  div.base#stock_base
+    div.base_image
+  div.base#waste_base
+    div.base_image
+  - 0.upto 3 do |i|
+    div.base.foundation id="foundation_#{i}_base
+      div.base_image
+  - 0.upto 6 do |i|
+    div.base.tableau id="tableau_#{i}_base
+      div.base_image
+
+coffee:
+  window.solitaire_main($('.solitaire_canvas'))

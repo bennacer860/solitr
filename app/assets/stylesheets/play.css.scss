@@ -1,3 +1,107 @@
-// Place all the styles related to the play controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: http://sass-lang.com/
+$first_row: 20px;
+$second_row: 250px;
+$first_column: 20px;
+$card_width: 120px;
+$card_height: 200px;
+$column_offset: $card_width + 20px;
+
+.solitaire_canvas {
+  position: relative;
+}
+
+.card > div, .base {
+  width: $card_width;
+  height: $card_height;
+}
+
+.base {
+  position: absolute;
+}
+
+.base.foundation, .base.tableau {
+  .base_image {
+    width: $card_width;
+    height: $card_height;
+    background-color: #000;
+    opacity: 0.1;
+  }
+}
+
+// Positions
+
+#stock_base {
+  left: $first_column;
+}
+
+#waste_base {
+  left: $first_column + 1 * $column_offset;
+}
+
+#stock_base,
+#waste_base,
+.foundation {
+  top: $first_row;
+}
+
+#foundation_0_base {
+  left: $first_row + 3 * $column_offset;
+}
+
+#foundation_1_base {
+  left: $first_row + 4 * $column_offset;
+}
+
+#foundation_2_base {
+  left: $first_row + 5 * $column_offset;
+}
+
+#foundation_3_base {
+  left: $first_row + 6 * $column_offset;
+}
+
+.tableau {
+  top: $second_row;
+}
+
+@for $i from 0 through 6 {
+  #tableau_#{$i}_base {
+    left: $first_row + $i * $column_offset;
+  }
+}
+
+.stacked {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.fanned {
+  position: absolute;
+  top: 20px;
+  left: 0px;
+}
+
+.base > .stacked, .base > .fanned {
+  top: 0;
+  left: 0;
+}
+
+// Cards
+
+.card {
+  & > div {
+    width: $card_width;
+    height: $card_height;
+    position: absolute;
+  }
+  .face {
+    background-color: #eee;
+    border-radius: 5px;
+    border: 1px solid black;
+  }
+  .back {
+    background-color: #88c;
+    border-radius: 5px;
+    border: 1px solid black;
+  }
+}
