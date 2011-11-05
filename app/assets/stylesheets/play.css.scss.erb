@@ -1,0 +1,101 @@
+$first_row: 20px;
+$second_row: 250px;
+$first_column: 20px;
+$card_width: 79px;
+$card_height: 123px;
+$column_offset: $card_width + 20px;
+
+body {
+  height: 100%;
+}
+
+#solitaire_canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.card, .card > div, .base, .base_image, .dropzone {
+  width: $card_width;
+  height: $card_height;
+  position: absolute;
+}
+
+.base, .dropzone {
+  position: absolute;
+}
+
+.dropzone {
+  z-index: -1;
+  //background-color: #f00;
+  //opacity: 0.2;
+}
+
+.base.foundation, .base.tableau {
+  .base_image {
+    background-color: #000;
+    opacity: 0.1;
+  }
+}
+
+#redeal_image {
+  background-color: #dfd;
+}
+#exhausted_image {
+  background-color: #fff;
+}
+
+.card {
+  background: url(<%= image_path('paris.png') %>);
+  background-position: 0 0;
+  .face {
+  }
+  .back {
+    background-color: #88c;
+    border-radius: 5px;
+    border: 1px solid black;
+  }
+}
+
+.button {
+  position: absolute;
+  width: 150px;
+  padding: 15px;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #8f8;
+}
+
+#undo_button {
+  top: $second_row;
+  left: $first_column + 7 * $column_offset;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+#new_game_button_1 {
+  top: $first_row;
+  left: $first_row + 7 * $column_offset;
+}
+#new_game_button_2 {
+  top: $first_row + 80px;
+  left: $first_row + 7 * $column_offset;
+}
+
+.ui-draggable, .button, #redeal_image {
+  cursor: pointer;
+}
+
+#you_win {
+  background-color: #ccf;
+  opacity: 0.9;
+  font-size: 40pt;
+  padding: 20px;
+  text-align: center;
+  position: absolute;
+  top: 200px;
+  left: 50px;
+  width: 580px;
+  z-index: 1000000;
+  display: none;
+}

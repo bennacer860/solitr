@@ -1,9 +1,7 @@
-div.solitaire_canvas
+div#solitaire_canvas
   div.base#stock_base
     div.base_image#redeal_image
-      | CLICK TO REDEAL
     div.base_image#exhausted_image
-      | EXHAUSTED
 
   div.base#waste_base
     div.base_image
@@ -26,7 +24,8 @@ div.solitaire_canvas
   div.dropzone#tableau_5_dropzone
   div.dropzone#tableau_6_dropzone
 
-  div#undo_button Undo
+  div#you_win You win!<br>Let's play one more time!
 
-coffee:
-  window.solitaire_main($('.solitaire_canvas'))
+  div.button#new_game_button_1 New Game<br>turn one (easy)
+  div.button#new_game_button_2 New Game<br>turn three (medium)
+  div.button#undo_button Undo

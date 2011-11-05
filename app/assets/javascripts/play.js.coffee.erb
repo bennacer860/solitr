@@ -1,5 +1,6 @@
 #ACCEPT_OVERRIDE = '*'
 ACCEPT_OVERRIDE = null
+DEBUG = false
 
 assert = (exp) ->
   throw 'Runtime error' unless exp
@@ -27,8 +28,8 @@ KING = 12
 FIRST_ROW = 20
 SECOND_ROW = 250
 FIRST_COLUMN = 20
-CARD_WIDTH = 120
-CARD_HEIGHT = 200
+CARD_WIDTH = 79
+CARD_HEIGHT = 123
 VERTICAL_FANNING_OFFSET = 20
 HORIZONTAL_FANNING_OFFSET = 20
 COLUMN_OFFSET = CARD_WIDTH + 20
@@ -43,10 +44,13 @@ class Card
     @update_element()
 
   update_element: ->
+    
     if @upturned
-      @element.html("<div class=\"face\"><!-- #{@id} -->#{'A23456789TJQK'[@rank] + '♣♠♥♦'[@suit]}</div>")
+      this.element.css
+        backgroundPosition: "-#{@rank * 79}px -#{[0, 3, 2, 1][@suit] * 123}px"
     else
-      @element.html("<div class=\"back\"><!-- #{@id} --></div>")
+      this.element.css
+        backgroundPosition: "-#{2 * 79}px -#{4 * 123}px"
 
   render_at: (left, top, upturned, z_index = '') ->
     if @upturned != upturned
@@ -58,10 +62,11 @@ class Card
 
 
 class GameState
-  constructor: (@canvas_div, @deck) ->
+  constructor: (@game_manager, @deck, @turns) ->
+    @canvas_div = @game_manager.canvas_div
 
   clone: ->
-    copy = new GameState(@canvas_div, @deck)
+    copy = new GameState(@game_manager, @deck, @turns)
     for array in ['stock', 'waste']
       copy[array] = this[array].slice(0)
     for array in ['foundations', 'downturned_tableaux', 'upturned_tableaux']
@@ -79,6 +84,7 @@ class GameState
         @downturned_tableaux[j].push(@stock.pop())
       @upturned_tableaux[i].push(@stock.pop())
     @foundation_blank_html = '<div class="card"><div class="blank"></div></div>'
+    @render()
 
   get_card: (element) ->
     for c in @deck
@@ -86,21 +92,21 @@ class GameState
 
   # Player Actions
   turn: ->
-    undo_stack.push(@clone())
-    for i in [0...1]
+    @game_manager.undo_stack.push(@clone())
+    for i in [0...@turns]
       if @stock.length
         @waste.push(@stock.pop())
     @render()
 
   redeal: ->
-    undo_stack.push(@clone())
+    @game_manager.undo_stack.push(@clone())
     while @waste.length
       @stock.push @waste.pop()
     @render()
 
   drop_card: (card, target_type, index) ->
     # Drop any legal card on the given foundation or tableau.
-    undo_stack.push(@clone())
+    @game_manager.undo_stack.push(@clone())
     assert target_type in ['foundation', 'tableau']
     if card == @waste.last()
       cards = [@waste.pop()]
@@ -117,13 +123,20 @@ class GameState
             cards.unshift(t.pop()) # ugh
     if target_type == 'foundation'
       assert cards.length == 1
+    assert cards.length
     (if target_type == 'foundation' then @foundations else @upturned_tableaux)[index].push(cards...)
     # Upturn next card if necessary
     for t, index in @upturned_tableaux
       if not t.length and @downturned_tableaux[index].length
         t.push(@downturned_tableaux[index].pop())
+    setTimeout((=> @render()), 0)
 
   render: ->
+    if not (false in (f.length == 13 for f in @foundations))
+      $('#you_win').show()
+      $('#you_win').css('z-index', 1000000)
+    else
+      $('#you_win').hide()
     z_index = 1
     # Tableaux
     for i in [0...@downturned_tableaux.length]
@@ -140,9 +153,12 @@ class GameState
         top -= VERTICAL_FANNING_OFFSET # place dropzone over last card
       set_position("#tableau_#{i}_dropzone", left, top)
     # Stock
-    if not @stock.length
-      if @waste.length then $('#redeal_image').show() else $('#redeal_image').hide()
-      if not @waste.length then $('#exhausted_image').show() else $('#exhausted_image').hide()
+    if @waste.length or @stock.length
+      $('#redeal_image').show()
+      $('#exhausted_image').hide()
+    else
+      $('#redeal_image').hide()
+      $('#exhausted_image').show()
     left = FIRST_COLUMN
     top = FIRST_ROW
     set_position('#stock_base', left, top)
@@ -154,7 +170,7 @@ class GameState
     set_position('#waste_base', left, top)
     for c, index in @waste
       c.render_at(left, top, true, z_index++)
-      if index >= @waste.length - 3
+      if index >= @waste.length - @turns
         left += HORIZONTAL_FANNING_OFFSET
     # Foundations
     left = FIRST_COLUMN + 3 * COLUMN_OFFSET
@@ -168,6 +184,7 @@ class GameState
 
     # Register events
     @canvas_div.off('.solitaire', '**')
+    $('.ui-draggable').draggable('destroy')
     # Set playable cards
     $('.playable').removeClass('playable')
     playable_cards = []
@@ -176,12 +193,29 @@ class GameState
         c = stack[stack.length-1]
         c.element.addClass('playable')
         playable_cards.push(c)
+    # Click handlers
     if @stock.length
       @canvas_div.on 'click.solitaire', "##{@stock[@stock.length-1].id}", =>
         @turn()
     else if @waste.length
       @canvas_div.on 'click.solitaire', "#redeal_image", =>
         @redeal()
+    # Double-click handlers
+    for c in [@waste.last()].concat(t.last() for t in @upturned_tableaux)
+      continue unless c
+      ((c) =>
+        @canvas_div.on 'dblclick.solitaire', "##{c.id}", (event) =>
+          # Sometimes we have double-clicks firing on the top waste card after
+          # repeatedly clicking the stock; checking for negative offsets
+          # filters them most of the time.
+          return if event.offsetX < 0 or event.offsetY < 0
+          if c.rank == ACE
+            @drop_card(c, 'foundation', _.indexOf((f.length for f in @foundations), 0))
+          else
+            for f, index in @foundations
+              if f.last() and f.last().suit == c.suit and f.last().rank == c.rank - 1
+                @drop_card(c, 'foundation', index)
+      )(c)
     # Drag handlers
     make_draggable = (element, dropzone_to_disable) =>
       # Make the element draggable. Also, disable the dropzone specified when
@@ -206,17 +240,18 @@ class GameState
       make_draggable(e, null)
     for t, tableau_index in @upturned_tableaux
       for c, card_index in t
-        make_draggable(c.element, "#tableau_#{index}_dropzone")
+        make_draggable(c.element, "#tableau_#{tableau_index}_dropzone")
     # Dropzones
     make_droppable = (target_type, index, accept) =>
       dropzone = $("##{target_type}_#{index}_dropzone")
+      assert dropzone.length
+      dropzone.html(accept) if DEBUG
       dropzone.droppable
         tolerance: 'touch'
         accept: ACCEPT_OVERRIDE || accept
         drop: (event, ui) =>
           card = @get_card(ui.draggable)
           @drop_card(card, target_type, index)
-          setTimeout((=> @render()), 0)
     for f, index in @foundations
       if f.length
         c = f[f.length-1]
@@ -237,23 +272,30 @@ class GameState
         accept = ".card_#{KING}_0, .card_#{KING}_1, .card_#{KING}_2, .card_#{KING}_3"
       make_droppable('tableau', index, accept)
 
-#  class UndoStack
-#    constructor: ->
-#      @stack = []
+class GameManager
+  constructor: (@canvas_div) ->
+    @deck = _.flatten(new Card(r, s, false) for r in [ACE..KING] for s in [0..3])
+    @undo_stack = []
+    for c in @deck
+      @canvas_div.append(c.element)
 
-#    push_state(state)
+  new_game: (turns) ->
+    @undo_stack = []
+    @game_state = new GameState(this, @deck, turns)
+    @game_state.deal()
 
-undo_stack = []
+  undo: ->
+    if @undo_stack.length
+      @game_state = @undo_stack.pop()
+      @game_state.render()
 
-# Throwing this into window can't be right?
-window.solitaire_main = (canvas_div) ->
-  deck = _.flatten(new Card(r, s, false) for r in [ACE..KING] for s in [0..3])
-  for c in deck
-    canvas_div.append(c.element)
-  window.game_state = new GameState(canvas_div, deck)
-  window.game_state.deal()
+$ ->
+  game_manager = new GameManager($('#solitaire_canvas'))
+  game_manager.new_game(1)
   $('#undo_button').on 'click', =>
-    if undo_stack.length
-      window.game_state = undo_stack.pop()
-      window.game_state.render()
-  window.game_state.render()
+    game_manager.undo()
+  $('#new_game_button_1').on 'click', =>
+    game_manager.new_game(1)
+  $('#new_game_button_2').on 'click', =>
+    game_manager.new_game(3)
+  $('body').disableSelection()

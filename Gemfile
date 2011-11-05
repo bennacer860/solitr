@@ -17,10 +17,7 @@ group :assets do
   gem 'slim'
 end
 
-group 'development' do
-  gem 'slim-rails' # generators
-end
-
+gem 'slim-rails' # generators
 gem 'jquery-rails'
 
 # To use ActiveModel has_secure_password
