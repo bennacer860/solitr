@@ -42,8 +42,6 @@ body {
   background-color: #eee;
 }
 
-// Cards
-
 .card {
   .face {
     background-color: #eee;
@@ -55,4 +53,15 @@ body {
     border-radius: 5px;
     border: 1px solid black;
   }
+}
+
+#undo_button {
+  position: absolute;
+  top: $first_row + ($card_height * 3 / 2);
+  left: $first_column + 7 * $column_offset;
+  width: 100px;
+  padding: 20px;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #8f8;
 }
